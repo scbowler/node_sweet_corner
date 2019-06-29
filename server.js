@@ -5,9 +5,45 @@ const app = express();
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+// app.use('/auth/*', (req, res, next) => {
+//     // console.log(req);
+//     console.log('Request URL:', req.baseUrl);
+//     console.log('Request Query String:', req.query);
+//     console.log('Request Body:', req.body);
 
-app.get('/', (request, response) => {
-    console.log('Request Received from:', request.url);
+//     next();
+// });
+
+const logger = (req, res, next) => {
+    // console.log(req);
+    console.log('Request URL:', req.baseUrl);
+    console.log('Request Query String:', req.query);
+    console.log('Request Body:', req.body);
+
+    next();
+}
+
+function withUser(req, res, next){
+    // User came from DB query
+    const user = {
+        id: 78,
+        name: 'Hank Hill',
+        email: 'kingohill@example.com'
+    }
+
+    // const user = null;
+
+    if(user){
+        req.user = user;
+        next();
+    } else {
+        res.status(401).send('Unauthorized');
+    }
+}
+
+app.get('/', withUser, (request, response) => {
+
+    console.log('HOME CONTROLLER USER:', request.user);
 
     response.send({
         message: 'This is the home route',
@@ -50,7 +86,7 @@ app.get('/article', (req, res) => {
     });
 });
 
-app.post('/sign-in', (req, res) => {
+app.post('/auth/sign-in', logger, (req, res) => {
     console.log('POST DATA:', req.body);
 
     res.send({
@@ -64,7 +100,7 @@ app.post('/sign-in', (req, res) => {
 
 // OUTPUT { message: 'User updated', patchData: {}}
 
-app.patch('/update-user', (req, res) => {
+app.patch('/auth/update-user', logger, (req, res) => {
     res.send({
         message: 'User updated',
         patchData: req.body
