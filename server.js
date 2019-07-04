@@ -50,6 +50,12 @@ app.get('/api/products', async (req, res) => {
     res.send({products});
 });
 
+app.get('/api/products/:product_id', (req, res) => {
+    const { product_id } = req.params;
+
+    res.send({product_id});
+});
+
 app.post('/auth/create-account', async (req, res) => {
     const { email, password, firstName, lastName } = req.body;
 
