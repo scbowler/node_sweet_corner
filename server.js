@@ -22,6 +22,10 @@ const db = mysql.createPool(dbConfig);
 }
 */
 
+// SELECT p.pid AS id, p.caption, p.cost, p.name, i.pid AS thumb_id, i.altText, i.file, i.type FROM products AS p JOIN images AS i ON p.thumbnailId=i.id
+
+
+
 app.post('/auth/create-account', async (req, res) => {
     const { email, password, firstName, lastName } = req.body;
 
