@@ -22,7 +22,7 @@ const db = mysql.createPool(dbConfig);
 }
 */
 
-app.post('/auth/sign-up', async (req, res) => {
+app.post('/auth/create-account', async (req, res) => {
     const { email, password, firstName, lastName } = req.body;
 
     const errors = [];
@@ -73,18 +73,15 @@ app.post('/auth/sign-up', async (req, res) => {
     const [result] = await db.execute(
         `INSERT INTO users 
             (firstName, lastName, email, password, pid, roleId, lastAccessedAt, createdAt, updatedAt) 
-            VALUES (?, ?, ?, ?, UUID(), ?, CURRENT_TIME, CURRENT_TIME, CURRENT_TIME);
-            SELECT pid FROM users WHERE id=LAST_INSERT_ID()`,
+            VALUES (?, ?, ?, ?, UUID(), ?, CURRENT_TIME, CURRENT_TIME, CURRENT_TIME)`,
         [firstName, lastName, email, hashedPassword, role.id]
     );
 
-    console.log('Result:', result);
+    const [[user]] = await db.query(`SELECT CONCAT(firstName, ' ', lastName) AS name, email, pid FROM users WHERE id=${result.insertId}`);
 
     res.send({
         message: 'Account successfully created',
-        user: {
-            userId: result.insertId
-        }
+        user
     });
 });
 
@@ -106,7 +103,7 @@ app.post('/auth/sign-in', async (req, res) => {
     }
 
     const [[foundUser = null]] = await db.execute(
-        'SELECT name, id, password as hash FROM users WHERE email=?',
+        'SELECT CONCAT(firstName, " ", lastName) AS name, email, pid, password as hash FROM users WHERE email=?',
         [email]
     );
 
