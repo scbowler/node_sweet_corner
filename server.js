@@ -24,7 +24,31 @@ const db = mysql.createPool(dbConfig);
 
 // SELECT p.pid AS id, p.caption, p.cost, p.name, i.pid AS thumb_id, i.altText, i.file, i.type FROM products AS p JOIN images AS i ON p.thumbnailId=i.id
 
+app.get('/api/products', async (req, res) => {
+    const { protocol } = req;
 
+    const [result] = await db.query('SELECT p.pid AS id, p.caption, p.cost, p.name, i.pid AS thumb_id, i.altText, i.file, i.type FROM products AS p JOIN images AS i ON p.thumbnailId=i.id');
+
+    const urlBase = `${protocol}://${req.get('host')}/images`;
+
+    const products = result.map((product) => {
+        return {
+            id: product.id,
+            caption: product.caption,
+            cost: product.cost,
+            name: product.name,
+            thumbnail: {
+                id: product.thumb_id,
+                altText: product.altText,
+                file: product.file,
+                type: product.type,
+                url: `${urlBase}/${product.type}/${product.file}`
+            }
+        }
+    });
+
+    res.send({products});
+});
 
 app.post('/auth/create-account', async (req, res) => {
     const { email, password, firstName, lastName } = req.body;
