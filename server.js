@@ -11,25 +11,12 @@ app.use(express.json());
 
 const db = mysql.createPool(dbConfig);
 
-/* User Model
-{
-    name: '', 
-    email: '',
-    id: '',
-    password: '',
-    created_at: '',
-    updated_at: ''
+function imageUrl(req, type, file){
+    return `${req.protocol}://${req.get('host')}/images/${type}/${file}`;
 }
-*/
-
-// SELECT p.pid AS id, p.caption, p.cost, p.name, i.pid AS thumb_id, i.altText, i.file, i.type FROM products AS p JOIN images AS i ON p.thumbnailId=i.id
 
 app.get('/api/products', async (req, res) => {
-    const { protocol } = req;
-
     const [result] = await db.query('SELECT p.pid AS id, p.caption, p.cost, p.name, i.pid AS thumb_id, i.altText, i.file, i.type FROM products AS p JOIN images AS i ON p.thumbnailId=i.id');
-
-    const urlBase = `${protocol}://${req.get('host')}/images`;
 
     const products = result.map((product) => {
         return {
@@ -42,7 +29,7 @@ app.get('/api/products', async (req, res) => {
                 altText: product.altText,
                 file: product.file,
                 type: product.type,
-                url: `${urlBase}/${product.type}/${product.file}`
+                url: imageUrl(req, product.type, product.file)
             }
         }
     });
@@ -50,10 +37,43 @@ app.get('/api/products', async (req, res) => {
     res.send({products});
 });
 
-app.get('/api/products/:product_id', (req, res) => {
+app.get('/api/products/:product_id', async (req, res) => {
     const { product_id } = req.params;
 
-    res.send({product_id});
+    if(!product_id){
+        return res.status(422).send('Missing product ID');
+    }
+
+    const [[product = null]] = await db.execute(
+        'SELECT p.pid AS productId, p.caption, p.cost, p.description, p.name, im.pid AS imageId, im.altText AS imageAltText, im.file AS imageFile, im.type AS imageType, tn.pid AS tnId, tn.altText AS tnAltText, tn.file AS tnFile, tn.type AS tnType FROM products AS p JOIN images AS im ON p.imageId=im.id JOIN images AS tn ON p.thumbnailId=tn.id WHERE p.pid=?',
+        [product_id]
+    );
+
+    if(!product){
+        return res.status(422).send('Invalid product ID');
+    }
+
+    res.send({
+        id: product.productId,
+        caption: product.caption,
+        cost: product.cost,
+        description: product.description,
+        name: product.name,
+        image: {
+            id: product.imageId,
+            altText: product.imageAltText,
+            file: product.imageFile,
+            type: product.imageType,
+            url: imageUrl(req, product.imageType, product.imageFile)
+        },
+        thumbnail: {
+            id: product.tnId,
+            altText: product.tnAltText,
+            file: product.tnFile,
+            type: product.tnType,
+            url: imageUrl(req, product.tnType, product.tnFile)
+        }
+    });
 });
 
 app.post('/auth/create-account', async (req, res) => {
