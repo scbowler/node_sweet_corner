@@ -11,8 +11,11 @@ module.exports = async (req, res, next) => {
             const cartData = jwt.decode(cartToken, cartSecret);
 
             const [cart = null] = await db.query(
-                `SELECT * FROM carts AS c 
-                    JOIN cartItems AS ci ON ci.cartId=c.id 
+                `SELECT c.id AS cartId, c.lastInteraction, c.pid, c.createdAt,
+                    c.updatedAt, c.userId, c.statusId AS cartStatusId,
+                    ci.quantity, p.cost FROM carts AS c 
+                    JOIN cartItems AS ci ON ci.cartId=c.id
+                    JOIN products AS p ON ci.productId=p.id
                     WHERE c.id=${cartData.cartId} AND c.deletedAt IS NULL AND ci.deletedAt IS NULL`
             );
 
@@ -20,7 +23,24 @@ module.exports = async (req, res, next) => {
                 throw new StatusError(422, 'Invalid cart token');
             }
 
-            req.cart = cart;
+            const {cost, quantity, ...cartItem} = cart[0];
+
+            // const formattedCart = {
+            //     ...cartItem,
+            //     items: cart.map(({ cost, quantity }) => ({ cost, quantity }))
+            // };
+
+            const formattedCart = {
+                ...cartItem,
+                items: cart.map((item) => {
+                    return {
+                        cost: item.cost,
+                        quantity: item.quantity
+                    }
+                })
+            };
+
+            req.cart = formattedCart;
         }
         
         next();
