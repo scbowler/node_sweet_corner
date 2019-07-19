@@ -8,6 +8,6 @@ const { getCart, items } = require('./controllers/cart');
 
 router.get('/', withCart, getCart);
 
-router.post('/items/:product_id', items.add);
+router.post('/items/:product_id', withCart, items.add);
 
 module.exports = router;
