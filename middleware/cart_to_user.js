@@ -2,7 +2,7 @@ const db = require(__root + '/db');
 
 module.exports = async (req, res, next) => {
     try {
-        if(req.cart.userId){
+        if (req.cart && req.cart.userId){
             if(req.cart.userId !== req.user.id){
                 throw new StatusError(401, 'Illegal cart token');
             }
