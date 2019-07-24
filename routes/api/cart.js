@@ -1,13 +1,14 @@
 const router = require('express').Router();
-const withCart  = require(__root + '/middleware/with_cart.js');
 const { getCart, items } = require('./controllers/cart');
+const optionalAuth = require(__root + '/middleware/optional_auth');
+const withCart  = require(__root + '/middleware/with_cart');
 
 /*
     /api/cart Routes
 */
 
-router.get('/', withCart, getCart);
+router.get('/', optionalAuth, withCart, getCart);
 
-router.post('/items/:product_id', withCart, items.add);
+router.post('/items/:product_id', optionalAuth, withCart, items.add);
 
 module.exports = router;
