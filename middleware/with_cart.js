@@ -31,12 +31,12 @@ module.exports = async (req, res, next) => {
         }
 
         if(cartWhere){
-            const [cart = null] = await db.query(
+            const [[cart = null]] = await db.query(
                 cartQuery + cartWhere
             );
 
             if(cart){
-                const { cost, quantity, productId, ...cartItem } = cart[0];
+                const { cost, quantity, productId, ...cartItem } = cart;
 
                 const formattedCart = {
                     ...cartItem,
