@@ -11,10 +11,10 @@ const withCart = require(__root + '/middleware/with_cart');
 */
 
 // /auth/create-account
-router.post('/create-account', createAccount, withCart, cartToUser, controllers.createAccount);
+router.post('/create-account', withCart, createAccount, cartToUser, controllers.createAccount);
 
 // /auth/sign-in
-router.post('/sign-in', signIn, withCart, cartToUser, controllers.signIn);
+router.post('/sign-in', withCart, signIn, cartToUser, controllers.signIn);
 
 // /auth/sign-in
 router.get('/sign-in', withAuth, controllers.signIn);
