@@ -17,4 +17,21 @@
             text-transform: uppercase;
         }
     }
+
+    .cart-widget {
+        position: relative;
+        vertical-align: middle;
+
+        .cart-item-count {
+            background-color: $red;
+            border-radius: 50%;
+            color: white;
+            font-size: .7em;
+            left: 50%;
+            line-height: 1.3em;
+            padding: 3px 4px;
+            position: absolute;
+            top: 25%;
+        }
+    }
 }
