@@ -30,14 +30,10 @@ module.exports = async (req, res, next) => {
             cartWhere = ` AND c.id=${cartData.cartId}`;
         }
 
-        console.log('CART WHERE:', cartWhere);
-
         if(cartWhere){
             const [cart = null] = await db.query(
                 cartQuery + cartWhere
             );
-
-            console.log('====CART====:', cart);
 
             if(cart && cart.length){
                 const { cost, quantity, productId, ...cartItem } = cart[0];
